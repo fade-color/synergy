@@ -8,60 +8,74 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
+
       - name: Fix submodule URL
         run: git config --global url."https://github.com/".insteadOf "git@github.com:"
+
       - name: Create dummy version tag
         run: |
           git tag v0.0.0
           git update-ref refs/remotes/origin/master HEAD
-      - name: Setup Python
-        uses: actions/setup-python@v5
+
+      - name: Init submodules
+        run: git submodule update --init --recursive
+
+      # MSVC 环境（含 vcpkg，windows runner 自带 vcpkg 在 VCPKG_INSTALLATION_ROOT）
+      - name: Setup MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Install Qt6
+        uses: jurplel/install-qt-action@v4
         with:
-          python-version: '3.x'
-      - name: Install Qt
-        run: |
-          python -m pip install --upgrade pip
-          pip install aqtinstall
-          aqt install-qt windows desktop 5.15.2 win64_mingw81
+          version: '6.7.0'
+          host: windows
+          target: desktop
+          arch: win64_msvc2019_64
+
       - name: Configure and Build
         shell: cmd
         run: |
-          git submodule update --init --recursive
           mkdir build
           cd build
-          cmake -G "MinGW Makefiles" -DCMAKE_PREFIX_PATH=..\Qt\5.15.2\mingw81_64 ..
-          mingw32-make -j4
+          cmake -G "Visual Studio 17 2022" -A x64 ^
+            -DCMAKE_TOOLCHAIN_FILE=%VCPKG_INSTALLATION_ROOT%\scripts\buildsystems\vcpkg.cmake ^
+            -DVCPKG_TARGET_TRIPLET=x64-windows ^
+            -DVCPKG_MANIFEST_MODE=ON ^
+            ..
+          cmake --build . --config Release -j4
+
       - name: Upload Windows Artifact
         uses: actions/upload-artifact@v4
         with:
           name: synergy-windows
-          path: |
-            build/bin/*.exe
-            build/**/*.exe
+          path: build/**/*.exe
 
   build-macos:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
+
       - name: Fix submodule URL
         run: git config --global url."https://github.com/".insteadOf "git@github.com:"
+
       - name: Create dummy version tag
         run: |
           git tag v0.0.0
           git update-ref refs/remotes/origin/master HEAD
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.x'
+
+      - name: Init submodules
+        run: git submodule update --init --recursive
+
       - name: Install dependencies
-        run: brew install qt@5 cmake
+        run: brew install qt cmake openssl@3
+
       - name: Configure and Build
         run: |
-          git submodule update --init --recursive
           mkdir build
           cd build
-          cmake -DCMAKE_PREFIX_PATH=$(brew --prefix qt@5) ..
+          cmake -DCMAKE_PREFIX_PATH="$(brew --prefix qt);$(brew --prefix openssl@3)" ..
           make -j4
+
       - name: Upload macOS Artifact
         uses: actions/upload-artifact@v4
         with:
