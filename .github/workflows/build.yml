@@ -8,6 +8,8 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Fix submodule URL
+        run: git config --global url."https://github.com/".insteadOf "git@github.com:"
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
@@ -16,10 +18,11 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install aqtinstall
-          aqt install-qt windows desktop 5.15.2 win64_mingw81 -m qtcore qtgui widgets network
+          aqt install-qt windows desktop 5.15.2 win64_mingw81
       - name: Configure and Build
         shell: cmd
         run: |
+          git submodule update --init --recursive
           mkdir build
           cd build
           ..\Qt\5.15.2\mingw81_64\bin\qmake.exe ..\src\synergy.pro
@@ -36,6 +39,8 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Fix submodule URL
+        run: git config --global url."https://github.com/".insteadOf "git@github.com:"
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
@@ -45,6 +50,7 @@ jobs:
           brew install qt@5 cmake
       - name: Configure and Build
         run: |
+          git submodule update --init --recursive
           mkdir build
           cd build
           cmake -DCMAKE_PREFIX_PATH=$(brew --prefix qt@5) ..
