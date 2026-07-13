@@ -7,11 +7,11 @@ jobs:
   build-windows:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           ref: v1.20.4
       - name: Setup Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.x'
       - name: Install dependencies
@@ -26,7 +26,7 @@ jobs:
           ..\Qt\5.15.2\mingw81_64\bin\qmake.exe ..\src\synergy.pro
           mingw32-make.exe -j4
       - name: Upload Windows Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: synergy-windows
           path: build/release/*.exe
@@ -34,11 +34,11 @@ jobs:
   build-macos:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           ref: v1.20.4
       - name: Setup Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.x'
       - name: Install dependencies
@@ -52,7 +52,7 @@ jobs:
           cmake -DCMAKE_PREFIX_PATH=$(brew --prefix qt@5) ..
           make -j4
       - name: Upload macOS Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: synergy-macos
           path: build/bin/Synergy.app
