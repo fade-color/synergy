@@ -41,6 +41,7 @@ jobs:
             -DCMAKE_TOOLCHAIN_FILE=%VCPKG_INSTALLATION_ROOT%\scripts\buildsystems\vcpkg.cmake ^
             -DVCPKG_TARGET_TRIPLET=x64-windows ^
             -DVCPKG_MANIFEST_MODE=ON ^
+            -DBUILD_TESTS=OFF ^
             ..
           cmake --build . --config Release -j4
 
@@ -67,13 +68,15 @@ jobs:
         run: git submodule update --init --recursive
 
       - name: Install dependencies
-        run: brew install qt cmake openssl@3
+        run: brew install qt cmake openssl@3 tomlplusplus cli11 googletest
 
       - name: Configure and Build
         run: |
           mkdir build
           cd build
-          cmake -DCMAKE_PREFIX_PATH="$(brew --prefix qt);$(brew --prefix openssl@3)" ..
+          cmake -DCMAKE_PREFIX_PATH="$(brew --prefix qt);$(brew --prefix openssl@3)" \
+            -DBUILD_TESTS=OFF \
+            ..
           make -j4
 
       - name: Upload macOS Artifact
