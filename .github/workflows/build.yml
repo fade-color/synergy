@@ -1,4 +1,4 @@
-name: Build Synergy v1.20.4
+name: Build Synergy Master
 
 on:
   workflow_dispatch: # 允许手动触发
@@ -8,18 +8,17 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: v1.20.4
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.x'
-      - name: Install dependencies
+      - name: Install Qt
         run: |
           python -m pip install --upgrade pip
           pip install aqtinstall
           aqt install-qt windows desktop 5.15.2 win64_mingw81 -m qtcore qtgui widgets network
       - name: Configure and Build
+        shell: cmd
         run: |
           mkdir build
           cd build
@@ -29,14 +28,14 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: synergy-windows
-          path: build/release/*.exe
+          path: |
+            build/release/*.exe
+            build/*.exe
 
   build-macos:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: v1.20.4
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
@@ -44,7 +43,6 @@ jobs:
       - name: Install dependencies
         run: |
           brew install qt@5 cmake
-          python -m pip install --upgrade pip
       - name: Configure and Build
         run: |
           mkdir build
