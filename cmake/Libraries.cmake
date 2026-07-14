@@ -125,12 +125,15 @@ macro(configure_unix_libs)
   check_type_size(long SIZEOF_LONG)
   check_type_size(short SIZEOF_SHORT)
 
-  # Use CMake's Threads package for portable pthread linking.
-  # On Linux this resolves to -lpthread; on macOS pthread is part of
-  # libc, so no separate library file is linked.
-  set(THREADS_PREFER_PTHREAD_FLAG ON)
-  find_package(Threads REQUIRED)
-  list(APPEND libs Threads::Threads)
+  # pthread is used on both Linux and Mac
+  check_library_exists("pthread" pthread_create "" HAVE_PTHREAD)
+  if(HAVE_PTHREAD)
+    if(NOT APPLE)
+      list(APPEND libs pthread)
+    endif()
+  else()
+    message(FATAL_ERROR "Missing library: pthread")
+  endif()
 
   if(APPLE)
     configure_mac_libs()
