@@ -46,6 +46,12 @@ jobs:
             ..
           cmake --build . -j4
 
+      - name: List vcpkg bin directory
+        run: |
+          dir build\vcpkg_installed\x64-windows\bin
+          dir build\bin
+        shell: cmd
+
       - name: Upload Windows Artifact
         uses: actions/upload-artifact@v4
         with:
@@ -81,8 +87,14 @@ jobs:
             ..
           make -j4
 
+      - name: Package macOS App
+        run: |
+          cd build/bin
+          # 将 .app 打包成标准的 zip，防止目录结构被解压工具破坏
+          zip -r -y synergy-macos.zip synergy.app
+
       - name: Upload macOS Artifact
         uses: actions/upload-artifact@v4
         with:
           name: synergy-macos
-          path: build/bin/synergy.app
+          path: build/bin/synergy-macos.zip
