@@ -4,53 +4,53 @@ on:
   workflow_dispatch:
 
 jobs:
-  # build-windows:
-  #   runs-on: windows-latest
-  #   steps:
-  #     - uses: actions/checkout@v4
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
 
-  #     - name: Fix submodule URL
-  #       run: git config --global url."https://github.com/".insteadOf "git@github.com:"
+      - name: Fix submodule URL
+        run: git config --global url."https://github.com/".insteadOf "git@github.com:"
 
-  #     - name: Create dummy version tag
-  #       run: |
-  #         git tag v0.0.0
-  #         git update-ref refs/remotes/origin/master HEAD
+      - name: Create dummy version tag
+        run: |
+          git tag v0.0.0
+          git update-ref refs/remotes/origin/master HEAD
 
-  #     - name: Init submodules
-  #       run: git submodule update --init --recursive
+      - name: Init submodules
+        run: git submodule update --init --recursive
 
-  #     # MSVC 环境（含 vcpkg，windows runner 自带 vcpkg 在 VCPKG_INSTALLATION_ROOT）
-  #     - name: Setup MSVC
-  #       uses: ilammy/msvc-dev-cmd@v1
+      # MSVC 环境（含 vcpkg，windows runner 自带 vcpkg 在 VCPKG_INSTALLATION_ROOT）
+      - name: Setup MSVC
+        uses: ilammy/msvc-dev-cmd@v1
 
-  #     - name: Install Qt6
-  #       uses: jurplel/install-qt-action@v4
-  #       with:
-  #         version: '6.7.0'
-  #         host: windows
-  #         target: desktop
-  #         arch: win64_msvc2019_64
+      - name: Install Qt6
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.7.0'
+          host: windows
+          target: desktop
+          arch: win64_msvc2019_64
 
-  #     - name: Configure and Build
-  #       shell: cmd
-  #       run: |
-  #         mkdir build
-  #         cd build
-  #         cmake -G Ninja ^
-  #           -DCMAKE_BUILD_TYPE=Release ^
-  #           -DCMAKE_TOOLCHAIN_FILE=%VCPKG_INSTALLATION_ROOT%\scripts\buildsystems\vcpkg.cmake ^
-  #           -DVCPKG_TARGET_TRIPLET=x64-windows ^
-  #           -DVCPKG_MANIFEST_MODE=ON ^
-  #           -DBUILD_TESTS=OFF ^
-  #           ..
-  #         cmake --build . -j4
+      - name: Configure and Build
+        shell: cmd
+        run: |
+          mkdir build
+          cd build
+          cmake -G Ninja ^
+            -DCMAKE_BUILD_TYPE=Release ^
+            -DCMAKE_TOOLCHAIN_FILE=%VCPKG_INSTALLATION_ROOT%\scripts\buildsystems\vcpkg.cmake ^
+            -DVCPKG_TARGET_TRIPLET=x64-windows ^
+            -DVCPKG_MANIFEST_MODE=ON ^
+            -DBUILD_TESTS=OFF ^
+            ..
+          cmake --build . -j4
 
-  #     - name: Upload Windows Artifact
-  #       uses: actions/upload-artifact@v4
-  #       with:
-  #         name: synergy-windows
-  #         path: build/**/*.exe
+      - name: Upload Windows Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: synergy-windows
+          path: build/**/*.exe
 
   build-macos:
     runs-on: macos-latest
@@ -85,4 +85,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: synergy-macos
-          path: build/bin/Synergy.app
+          path: build/bin/synergy.app
