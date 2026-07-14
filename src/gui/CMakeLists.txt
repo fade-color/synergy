@@ -72,10 +72,11 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   find_program(MACDEPLOYQT_BIN macdeployqt6)
   message(STATUS "Found macdeployqt6: ${MACDEPLOYQT_BIN}")
 
-  set(MACDEPLOYQT_CMD
-      "${MACDEPLOYQT_BIN} ${DESKFLOW_BUNDLE_DIR} -always-overwrite")
-  install(CODE "MESSAGE (\"Running: ${MACDEPLOYQT_CMD}\")")
-  install(CODE "execute_process(COMMAND ${MACDEPLOYQT_CMD})")
+  # 改为 POST_BUILD，这样在 make 阶段就会自动把 Qt 依赖打进 .app，无需 make install
+  add_custom_command(TARGET ${target} POST_BUILD
+    COMMAND ${MACDEPLOYQT_BIN} $<TARGET_BUNDLE_DIR:${target}> -always-overwrite
+    COMMENT "Deploying Qt runtime for ${target}.app"
+  )
 
   # Warning: Do not use for CI/production, as the `entitlements-dev.plist` file adds special 
   # entitlements that are only appropriate for local development.
@@ -120,6 +121,18 @@ elseif(WIN32)
       --no-quick-import
       $<TARGET_FILE:${GUI_BINARY_NAME}>
     COMMENT "Deploying Qt runtime for ${GUI_BINARY_NAME}.exe"
+  )
+
+  # 拷贝 OpenSSL DLL 到输出目录，解决运行时缺依赖问题
+  set(OPENSSL_BIN_DIR "${CMAKE_BINARY_DIR}/vcpkg_installed/x64-windows/bin")
+  add_custom_command(TARGET ${GUI_BINARY_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+      "${OPENSSL_BIN_DIR}/libcrypto-3-x64.dll"
+      "$<TARGET_FILE_DIR:${GUI_BINARY_NAME}>"
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+      "${OPENSSL_BIN_DIR}/libssl-3-x64.dll"
+      "$<TARGET_FILE_DIR:${GUI_BINARY_NAME}>"
+    COMMENT "Copying OpenSSL DLLs to output directory"
   )
 
 endif()
